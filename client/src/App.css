@@ -204,3 +204,35 @@ button { cursor: pointer; }
   .cta-button { width: 100%; }
   .footer { align-items: flex-start; flex-direction: column; }
 }
+
+.nav-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-login {
+  padding: 11px 14px;
+  border: 0;
+  background: transparent;
+  color: #303b54;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nav-user {
+  color: #303b54;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .nav-auth-actions {
+    gap: 6px;
+  }
+
+  .nav-user {
+    display: none;
+  }
+}

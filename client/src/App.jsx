@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import "./App.css";
-
+import AuthPage from "./AuthPage";
 const sampleJobs = [
   {
     id: 1,
@@ -97,7 +97,8 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [apiStatus, setApiStatus] = useState("Checking connection...");
   const [savedJobs, setSavedJobs] = useState([]);
-
+  const [authView, setAuthView] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   useEffect(() => {
     const apiUrl = (
       import.meta.env.VITE_API_URL || "http://localhost:5000"
@@ -141,7 +142,19 @@ function App() {
         : [...current, id]
     );
   }
-
+if (authView) {
+  return (
+    <AuthPage
+      mode={authView}
+      onSwitch={setAuthView}
+      onClose={() => setAuthView(null)}
+      onSuccess={(user) => {
+        setCurrentUser(user);
+        setAuthView(null);
+      }}
+    />
+  );
+}
   return (
     <div className="app">
       <header className="navbar">
@@ -167,7 +180,33 @@ function App() {
           <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
         </nav>
 
-        <a className="nav-button" href="#opportunities">Explore opportunities</a>
+        <div className="nav-auth-actions">
+  {currentUser ? (
+    <>
+      <span className="nav-user">
+        Hi, {currentUser.fullName.split(" ")[0]}
+      </span>
+      <button
+        className="nav-button"
+        onClick={() => {
+          sessionStorage.removeItem("careerbridge_token");
+          setCurrentUser(null);
+        }}
+      >
+        Log out
+      </button>
+    </>
+  ) : (
+    <>
+      <button className="nav-login" onClick={() => setAuthView("login")}>
+        Log in
+      </button>
+      <button className="nav-button" onClick={() => setAuthView("register")}>
+        Get started
+      </button>
+    </>
+  )}
+</div>
       </header>
 
       <main>
