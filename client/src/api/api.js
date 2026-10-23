@@ -56,3 +56,34 @@ export async function getJobs() {
 
   return data.jobs;
 }
+
+export async function submitApplication({ jobId, coverLetter }) {
+  const token = sessionStorage.getItem("careerbridge_token");
+
+  if (!token) {
+    throw new Error("Please log in again before applying.");
+  }
+
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}/api/applications`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ jobId, coverLetter }),
+    });
+  } catch {
+    throw new Error("Cannot connect to the server. Please try again.");
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to submit your application.");
+  }
+
+  return data;
+}

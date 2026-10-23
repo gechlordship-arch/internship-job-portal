@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getJobs } from "./api/api";
+import { getJobs, submitApplication } from "./api/api";
 import "./Dashboard.css";
 import { API_URL } from "./api/api";
 
@@ -35,8 +35,40 @@ export default function Dashboard({ user, onLogout }) {
 const [opportunities, setOpportunities] = useState([]);
 const [loadingOpportunities, setLoadingOpportunities] = useState(true);
 const [opportunitiesError, setOpportunitiesError] = useState("");
-
+const [coverLetter, setCoverLetter] = useState("");
+const [submittingApplication, setSubmittingApplication] = useState(false);
+const [applicationMessage, setApplicationMessage] = useState("");
+const [applicationMessageType, setApplicationMessageType] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
+  
+async function handleApply() {
+  if (!selectedJob || submittingApplication) return;
+
+  setSubmittingApplication(true);
+  setApplicationMessage("");
+  setApplicationMessageType("");
+
+  try {
+    const result = await submitApplication({
+      jobId: selectedJob.id,
+      coverLetter,
+    });
+
+    setApplicationMessage(
+      result.message || "Your application was submitted successfully."
+    );
+    setApplicationMessageType("success");
+    setCoverLetter("");
+  } catch (error) {
+    setApplicationMessage(
+      error.message || "Unable to submit your application."
+    );
+    setApplicationMessageType("error");
+  } finally {
+    setSubmittingApplication(false);
+  }
+}
+
   const [jobForm, setJobForm] = useState({
     title: "",
     description: "",
@@ -691,15 +723,40 @@ const [opportunitiesError, setOpportunitiesError] = useState("");
               : "Not specified"}
           </p>
 
-          <button
-            type="button"
-            className="dashboard-primary-button"
-            onClick={() =>
-              alert("The application form will be added in the next step.")
-            }
-          >
-            Apply for this job →
-          </button>
+          {applicationMessage && (
+  <p className={`dashboard-application-message ${applicationMessageType}`}>
+    {applicationMessage}
+  </p>
+)}
+
+<form
+  className="dashboard-application-form"
+  onSubmit={(event) => {
+    event.preventDefault();
+    handleApply();
+  }}
+>
+  <label htmlFor="application-cover-letter">
+    Cover letter (optional)
+  </label>
+
+  <textarea
+    id="application-cover-letter"
+    value={coverLetter}
+    onChange={(event) => setCoverLetter(event.target.value)}
+    rows={5}
+    maxLength={5000}
+    placeholder="Explain why you're a good fit for this opportunity..."
+  />
+
+  <button
+    type="submit"
+    className="dashboard-primary-button"
+    disabled={submittingApplication}
+  >
+    {submittingApplication ? "Submitting..." : "Apply for this job →"}
+  </button>
+</form>
         </section>
       </div>
     )}

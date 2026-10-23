@@ -586,3 +586,49 @@
   }
 }
 
+/* Application form */
+.dashboard-application-form {
+  margin-top: 22px;
+}
+
+.dashboard-application-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #292941;
+  font-weight: 600;
+}
+
+.dashboard-application-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 130px;
+  padding: 12px 14px;
+  border: 1px solid #dedfeb;
+  border-radius: 10px;
+  font: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.dashboard-application-form textarea:focus {
+  outline: 2px solid #7257e8;
+  border-color: transparent;
+}
+
+.dashboard-application-form .dashboard-primary-button {
+  margin-top: 14px;
+}
+
+.dashboard-application-message {
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+.dashboard-application-message.success {
+  color: #17834c;
+}
+
+.dashboard-application-message.error {
+  color: #c0392b;
+}
+
