@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import "./App.css";
 import AuthPage from "./AuthPage";
+import Dashboard from "./Dashboard";
+import { getJobs } from "./api/api";
 const sampleJobs = [
   {
     id: 1,
@@ -92,6 +94,8 @@ const categories = [
 
 function App() {
   const [jobs, setJobs] = useState(sampleJobs);
+  const [jobsLoading, setJobsLoading] = useState(true);
+const [jobsError, setJobsError] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All opportunities");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -99,6 +103,7 @@ function App() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [authView, setAuthView] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showDashboard, setShowDashboard] = useState(false);
   useEffect(() => {
     const apiUrl = (
       import.meta.env.VITE_API_URL || "http://localhost:5000"
@@ -116,6 +121,45 @@ function App() {
       })
       .catch(() => setApiStatus("Demo mode"));
   }, []);
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadJobs() {
+    try {
+      const data = await getJobs();
+
+      if (!cancelled) {
+        setJobs(
+  data.map((job) => ({
+    ...job,
+    company: job.company || "Company",
+    type: job.job_type || "Internship",
+    category: "Development",
+    tags: [],
+    description: job.description || "",
+    location: job.is_remote ? "Remote" : job.location,
+  }))
+);
+        setJobsError("");
+      }
+    } catch (error) {
+      if (!cancelled) {
+        setJobsError(error.message || "Failed to load jobs.");
+      }
+    } finally {
+      if (!cancelled) {
+        setJobsLoading(false);
+      }
+    }
+  }
+
+  loadJobs();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   const filteredJobs = jobs.filter((job) => {
     const matchesCategory =
@@ -148,13 +192,30 @@ if (authView) {
       mode={authView}
       onSwitch={setAuthView}
       onClose={() => setAuthView(null)}
-      onSuccess={(user) => {
-        setCurrentUser(user);
-        setAuthView(null);
+      
+onSuccess={(user) => {
+  setCurrentUser(user);
+  setAuthView(null);
+  setShowDashboard(true);
+}}
+
+    />
+  );
+}
+
+if (showDashboard && currentUser) {
+  return (
+    <Dashboard
+      user={currentUser}
+      onLogout={() => {
+        sessionStorage.removeItem("careerbridge_token");
+        setCurrentUser(null);
+        setShowDashboard(false);
       }}
     />
   );
 }
+   
   return (
     <div className="app">
       <header className="navbar">
@@ -337,7 +398,46 @@ if (authView) {
             </button>
           </div>
 
-          {filteredJobs.length > 0 ? (
+          {jobsLoading ? (
+  <div className="empty-state">
+    <h3>Loading opportunities...</h3>
+    <p>Retrieving jobs from CareerBridge.</p>
+  </div>
+) : jobsError ? (
+  <div className="empty-state">
+    <h3>Unable to load opportunities</h3>
+    <p>{jobsError}</p>
+    <button
+      className="nav-button"
+      onClick={async () => {
+        setJobsLoading(true);
+        setJobsError("");
+
+        try {
+          const data = await getJobs();
+
+setJobs(
+  data.map((job) => ({
+    ...job,
+    company: job.company || "Company",
+    type: job.job_type || "Internship",
+    category: "Development",
+    tags: [],
+    description: job.description || "",
+    location: job.is_remote ? "Remote" : job.location,
+  }))
+);
+        } catch (error) {
+          setJobsError(error.message || "Failed to load jobs.");
+        } finally {
+          setJobsLoading(false);
+        }
+      }}
+    >
+      Try again
+    </button>
+  </div>
+) : filteredJobs.length > 0 ? (
             <div className="job-grid">
               {filteredJobs.map((job) => (
                 <article className="job-card" key={job.id}>

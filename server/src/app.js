@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { pool } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import jobsRoutes from "./routes/jobs.js";
 const app = express();
 
 app.use(
@@ -13,6 +14,7 @@ app.use(
 
 app.use(express.json({ limit: "1mb" }));
 app.use("/api/auth", authRoutes);
+app.use("/api/jobs", jobsRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "Internship and Job Portal API",
